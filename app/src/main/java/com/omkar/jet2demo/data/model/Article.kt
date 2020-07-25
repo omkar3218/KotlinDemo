@@ -4,11 +4,13 @@ import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import io.realm.RealmList
 import io.realm.RealmObject
+import io.realm.annotations.PrimaryKey
 
 open class Article :RealmObject() {
     @SerializedName("id")
     @Expose
-    var id: String? = null
+    @PrimaryKey
+    var id: Long? = null
 
     @SerializedName("createdAt")
     @Expose
@@ -28,10 +30,10 @@ open class Article :RealmObject() {
 
     @SerializedName("media")
     @Expose
-    var media: RealmList<Media>? = null
+    var media: RealmList<Media> = RealmList()
 
     @SerializedName("user")
     @Expose
-    var user: RealmList<User>? = null
+    var user: RealmList<User> = RealmList()
 
 }

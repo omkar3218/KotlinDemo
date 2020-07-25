@@ -1,5 +1,6 @@
 package com.omkar.jet2demo.ui
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,14 +8,20 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.omkar.jet2demo.R
+import dagger.android.support.AndroidSupportInjection
+import javax.inject.Inject
 
 class ArticleListFragment : Fragment() {
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
+
+    @Inject
+    lateinit var viewModel: ArticleListViewModel
 
     companion object {
         fun newInstance() = ArticleListFragment()
     }
-
-    private lateinit var viewModel: ArticleListViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -25,7 +32,11 @@ class ArticleListFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel= ViewModelProvider.NewInstanceFactory().create(ArticleListViewModel::class.java)
+        viewModel.fetchArticleList()
     }
 
+    override fun onAttach(context: Context) {
+        AndroidSupportInjection.inject(this)
+        super.onAttach(context)
+    }
 }

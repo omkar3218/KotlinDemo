@@ -5,9 +5,20 @@ import dagger.BindsInstance
 import dagger.Component
 import dagger.android.AndroidInjectionModule
 import dagger.android.AndroidInjector
-@Component(modules = [AndroidInjectionModule::class])
+import dagger.android.support.AndroidSupportInjectionModule
+import javax.inject.Singleton
 
-interface AppComponent: AndroidInjector<Jet2Application> {
+@Singleton
+@Component(
+    modules = [AndroidInjectionModule::class,
+        AndroidSupportInjectionModule::class,
+        AppModule::class,
+        ActivityModuleBuilder::class,
+        FragmentModuleBuilder::class,
+    ViewModelModule::class]
+)
+
+interface AppComponent : AndroidInjector<Jet2Application> {
     @Component.Builder
     interface Builder {
         @BindsInstance
