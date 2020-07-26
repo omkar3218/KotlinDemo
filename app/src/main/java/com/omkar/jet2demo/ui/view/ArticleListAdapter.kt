@@ -1,4 +1,4 @@
-package com.omkar.jet2demo.ui
+package com.omkar.jet2demo.ui.view
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -24,12 +24,18 @@ class ArticleListAdapter(private val articleDataModels: List<Article>?) :
         if (articleDataModels != null) {
             val article = articleDataModels[position]
             holder.binding.model = article
+            if (article.media.size > 0)
+                holder.binding.mediaModel = article.media[0]
+            if (article.user.size > 0)
+                holder.binding.userModel = article.user[0]!!
+
         }
     }
 
     override fun getItemCount(): Int {
         return articleDataModels?.size ?: 0
     }
+
 
     inner class ViewHolder internal constructor(val binding: ArticleListItemBinding) :
         RecyclerView.ViewHolder(binding.root)

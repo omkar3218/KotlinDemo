@@ -1,10 +1,10 @@
-package com.omkar.jet2demo.ui
+package com.omkar.jet2demo.ui.view
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import com.omkar.jet2demo.R
+import com.omkar.jet2demo.ui.view.ArticleListFragment
 import dagger.android.AndroidInjection
-import io.realm.RealmObject
 
 class MainActivity : AppCompatActivity() {
 
@@ -12,7 +12,8 @@ class MainActivity : AppCompatActivity() {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        supportFragmentManager.beginTransaction().replace(R.id.fragment_container,ArticleListFragment.newInstance()).commit()
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, ArticleListFragment.newInstance()).commit()
 
     }
 

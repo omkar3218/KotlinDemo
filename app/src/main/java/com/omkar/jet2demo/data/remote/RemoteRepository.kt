@@ -27,7 +27,7 @@ constructor(private val serviceGenerator: ServiceGenerator, private val context:
 
     private suspend fun processCall(responseCall: suspend () -> Response<*>): Any? {
         if (!isConnected(context)) {
-            return AppError(-1, "No internet")
+            return AppError(AppError.NO_INTERNET_CONNECTION, "No internet")
         }
         return try {
             val response = responseCall.invoke()
@@ -38,7 +38,7 @@ constructor(private val serviceGenerator: ServiceGenerator, private val context:
                 return AppError(responseCode, "Request failed")
             }
         } catch (e: IOException) {
-            return AppError(-1, "Network Error")
+            return AppError(AppError.NETWORK_ERROR, "Network Error")
         }
     }
 

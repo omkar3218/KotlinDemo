@@ -3,15 +3,17 @@ package com.omkar.jet2demo.data.model
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import io.realm.RealmObject
+import io.realm.annotations.PrimaryKey
 
-open class Media : RealmObject(){
+open class Media : RealmObject() {
     @SerializedName("id")
     @Expose
-    var id: String? = null
+    @PrimaryKey
+    var id: Long? = null
 
     @SerializedName("blogId")
     @Expose
-    var blogId: String? = null
+    var blogId: Long? = null
 
     @SerializedName("createdAt")
     @Expose

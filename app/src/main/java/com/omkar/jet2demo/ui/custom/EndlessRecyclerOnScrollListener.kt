@@ -1,4 +1,4 @@
-package com.omkar.jet2demo.ui
+package com.omkar.jet2demo.ui.custom
 
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -12,18 +12,6 @@ abstract class EndlessRecyclerOnScrollListener(
     private var visibleItemCount = 0
     private var totalItemCount = 0
     private var currentPage = 1
-    fun setmLinearLayoutManager(mLinearLayoutManager: LinearLayoutManager) {
-        this.mLinearLayoutManager = mLinearLayoutManager
-    }
-
-    fun reset() {
-        previousTotal = 0
-        loading = true
-        firstVisibleItem = 0
-        visibleItemCount = 0
-        totalItemCount = 0
-        currentPage = 1
-    }
 
     override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
         super.onScrolled(recyclerView, dx, dy)
@@ -40,8 +28,6 @@ abstract class EndlessRecyclerOnScrollListener(
         if (!loading
             && totalItemCount - visibleItemCount <= firstVisibleItem + visibleThreshold
         ) {
-            // End has been reached
-            // Do something
             currentPage++
             onLoadMore(currentPage)
             loading = true

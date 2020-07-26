@@ -1,4 +1,4 @@
-package com.omkar.jet2demo.ui
+package com.omkar.jet2demo.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

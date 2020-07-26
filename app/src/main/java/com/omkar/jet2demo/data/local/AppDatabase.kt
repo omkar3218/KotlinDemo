@@ -8,22 +8,7 @@ import io.realm.RealmList
 import io.realm.RealmResults
 
 class AppDatabase private constructor() {
-    private var realmInstance: Realm? = null
 
-    /**
-     * Gets realm instance.
-     *
-     * @return the realm instance
-     */
-    private fun getRealmInstance(): Realm? {
-        openDB()
-        return realmInstance
-    }
-
-    private fun openDB() {
-        if (realmInstance == null || realmInstance!!.isClosed)
-            realmInstance = Realm.getDefaultInstance()
-    }
 
     private fun prepareRealmInstance() {
         val config = RealmConfiguration.Builder().name("article.realm")
@@ -31,47 +16,32 @@ class AppDatabase private constructor() {
             .build()
         Realm.setDefaultConfiguration(config)
         Realm.compactRealm(config)
-        openDB()
     }
 
     fun closeDB() {
-        if (realmInstance != null) realmInstance!!.close()
-    }
-
-    private fun beginTransaction() {
-        getRealmInstance()!!.beginTransaction()
-    }
-
-    private fun commitTransaction() {
-        getRealmInstance()!!.commitTransaction()
-        Realm.compactRealm(Realm.getDefaultConfiguration())
+        if (Realm.getDefaultInstance() != null) Realm.getDefaultInstance()!!.close()
     }
 
     fun saveArticleDataModel(articleList: RealmList<Article>?) {
-        try {
-            getRealmInstance()!!.beginTransaction()
-            getRealmInstance()!!.copyToRealmOrUpdate(articleList)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        } finally {
-            commitTransaction()
-        }
+        Realm.getDefaultInstance()!!.beginTransaction()
+        Realm.getDefaultInstance()!!.copyToRealmOrUpdate(articleList)
+        Realm.getDefaultInstance()!!.commitTransaction()
     }
 
-    fun getArticles(): RealmResults<Article?> {
-        val articleList: RealmResults<Article?> =
-            getRealmInstance()!!.where(Article::class.java).findAll()
-        return articleList
+    fun getArticles(pageNumber: Int): List<Article> {
+        val list: MutableList<Article> = ArrayList()
+        val articleList: RealmResults<Article> =
+            Realm.getDefaultInstance()!!.where(Article::class.java)
+                .between("id", (pageNumber - 1) * 10, pageNumber * 10).findAll()
+
+        list.addAll(Realm.getDefaultInstance()!!.copyFromRealm(articleList))
+
+        return list
     }
 
     companion object {
         private var appDatabase: AppDatabase? = null
 
-        /**
-         * Gets instance.
-         *
-         * @return the instance
-         */
         val instance: AppDatabase?
             get() {
                 if (appDatabase == null)
