@@ -16,3 +16,9 @@ Components used in the demo :
 •	Realm : for Local database used for catching the data 
 •	GSON and JSON : for parsing the response from API 
 •	Glide : for image handling and caching
+
+
+
+
+Video Demo :
+[![Jet2Demo Video](https://img.youtube.com/vi/omkar3218/0.jpg)](https://www.youtube.com/watch?v=3ugs82hdrP8)
