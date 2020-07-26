@@ -21,6 +21,7 @@ class ArticleListAdapter(private val articleDataModels: List<Article>?) :
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.binding.articleImageView.setImageDrawable(null)
         if (articleDataModels != null) {
             val article = articleDataModels[position]
             holder.binding.model = article
