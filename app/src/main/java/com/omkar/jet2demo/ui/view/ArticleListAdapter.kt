@@ -1,19 +1,24 @@
 package com.omkar.jet2demo.ui.view
 
+import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.omkar.jet2demo.R
-import com.omkar.jet2demo.data.model.Article
-import com.omkar.jet2demo.databinding.ArticleListItemBinding
+import com.omkar.jet2demo.data.model.Image
+import com.omkar.jet2demo.databinding.ArticleListItemUpBinding
 
-class ArticleListAdapter(private val articleDataModels: List<Article>?) :
+class ArticleListAdapter(
+    private val articleDataModels: List<Image>?,
+    private var context: ArticleListFragment
+) :
     RecyclerView.Adapter<ArticleListAdapter.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding: ArticleListItemBinding = DataBindingUtil.inflate(
+        val binding: ArticleListItemUpBinding = DataBindingUtil.inflate(
             LayoutInflater.from(parent.context),
-            R.layout.article_list_item,
+            R.layout.article_list_item_up,
             null,
             false
         )
@@ -21,15 +26,12 @@ class ArticleListAdapter(private val articleDataModels: List<Article>?) :
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.binding.articleImageView.setImageDrawable(null)
+        holder.binding.userImageView.setImageDrawable(null)
         if (articleDataModels != null) {
-            val article = articleDataModels[position]
-            holder.binding.model = article
-            if (article.media.size > 0)
-                holder.binding.mediaModel = article.media[0]
-            if (article.user.size > 0)
-                holder.binding.userModel = article.user[0]!!
-
+            holder.binding.imageLink = articleDataModels[position].link
+        }
+        holder.binding.userImageView.setOnClickListener {
+            articleDataModels?.get(position)?.let { it1 -> context.navigateToImageDetailsScreen(it1) }
         }
     }
 
@@ -38,7 +40,7 @@ class ArticleListAdapter(private val articleDataModels: List<Article>?) :
     }
 
 
-    inner class ViewHolder internal constructor(val binding: ArticleListItemBinding) :
+    inner class ViewHolder internal constructor(val binding: ArticleListItemUpBinding) :
         RecyclerView.ViewHolder(binding.root)
 
 }

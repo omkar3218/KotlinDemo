@@ -2,6 +2,7 @@ package com.omkar.jet2demo.data.remote
 
 import com.google.gson.Gson
 import com.omkar.jet2demo.BuildConfig
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -19,6 +20,10 @@ constructor(private val gson: Gson) {
     private val TIMEOUT_CONNECT = 30   //In seconds
     private val TIMEOUT_READ = 30   //In seconds
 
+    private val CONTENT_TYPE = "Authorization"   //In seconds
+    private val CONTENT_TYPE_VALUE = "Client-ID 137cda6b5008a7c"   //In seconds
+
+
     private val okHttpBuilder: OkHttpClient.Builder = OkHttpClient.Builder()
     private var retrofit: Retrofit? = null
 
@@ -34,7 +39,18 @@ constructor(private val gson: Gson) {
             return loggingInterceptor
         }
 
+    private val headerInterceptor = Interceptor { chain ->
+        val original = chain.request()
+        val request = original.newBuilder()
+            .header(CONTENT_TYPE, CONTENT_TYPE_VALUE)
+            .method(original.method, original.body)
+            .build()
+        chain.proceed(request)
+    }
+
     init {
+       //okHttpBuilder.addInterceptor{ it.proceed(it.request().newBuilder().addHeader("Cache-Control", "no-store").build())}
+        okHttpBuilder.addInterceptor(headerInterceptor)
         okHttpBuilder.addInterceptor(logger)
         okHttpBuilder.connectTimeout(TIMEOUT_CONNECT.toLong(), TimeUnit.SECONDS)
         okHttpBuilder.readTimeout(TIMEOUT_READ.toLong(), TimeUnit.SECONDS)

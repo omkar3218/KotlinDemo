@@ -1,10 +1,11 @@
 package com.omkar.jet2demo.ui.custom
 
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 abstract class EndlessRecyclerOnScrollListener(
-    private var mLinearLayoutManager: LinearLayoutManager
+    private var mLinearLayoutManager: GridLayoutManager
 ) : RecyclerView.OnScrollListener() {
     private var previousTotal = 0
     private var loading = true
@@ -35,10 +36,5 @@ abstract class EndlessRecyclerOnScrollListener(
     }
 
     protected abstract fun onLoadMore(current_page: Int)
-
-    companion object {
-        var TAG = EndlessRecyclerOnScrollListener::class.java
-            .simpleName
-    }
 
 }

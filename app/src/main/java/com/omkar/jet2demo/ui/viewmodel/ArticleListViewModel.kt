@@ -1,13 +1,11 @@
 package com.omkar.jet2demo.ui.viewmodel
 
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import com.omkar.jet2demo.data.local.AppDatabase
-import com.omkar.jet2demo.data.model.Article
+import androidx.appcompat.widget.SearchView
+import androidx.lifecycle.*
+import com.omkar.jet2demo.data.model.Data
 import com.omkar.jet2demo.data.remote.RemoteRepository
 import com.omkar.jet2demo.data.remote.Resource
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -19,21 +17,17 @@ class ArticleListViewModel @Inject constructor(override var coroutineContext: Co
     var isLoading = MutableLiveData<Boolean>()
 
 
-    var articleLiveData = MutableLiveData<List<Article>>()
+    var articleLiveData = MutableLiveData<List<Data>>()
 
-    fun fetchArticleList(pageNumber: Int) {
+    fun fetchArticleList(pageNumber: Int, searchTerm: String) {
         launch {
             isLoading.postValue(true)
-            val response = remoteRepository.requestArticles(pageNumber, 10)
-            when (response) {
+            when (val response = remoteRepository.requestArticles(pageNumber, searchTerm)) {
                 is Resource.Success -> {
                     isLoading.postValue(false)
-                    AppDatabase.instance?.saveArticleDataModel(response.data)
-                    articleLiveData.postValue(response.data)
+                    articleLiveData.postValue(response.data?.data)
                 }
                 is Resource.DataError -> {
-                    val list = AppDatabase.instance?.getArticles(pageNumber)
-                    articleLiveData.postValue(list)
                     isLoading.postValue(false)
 
                 }
@@ -41,4 +35,38 @@ class ArticleListViewModel @Inject constructor(override var coroutineContext: Co
 
         }
     }
+
+    internal class DebouncingQueryTextListener(lifecycle: Lifecycle, private val onDebouncingQueryTextChange: (String?) -> Unit) : SearchView.OnQueryTextListener,
+        LifecycleObserver {
+        var debouncePeriod: Long = 250
+
+        private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
+
+        private var searchJob: Job? = null
+
+        init {
+            lifecycle.addObserver(this)
+        }
+
+        override fun onQueryTextSubmit(query: String?): Boolean {
+            return false
+        }
+
+        override fun onQueryTextChange(newText: String?): Boolean {
+            searchJob?.cancel()
+            searchJob = coroutineScope.launch {
+                newText?.let {
+                    delay(debouncePeriod)
+                    onDebouncingQueryTextChange(newText)
+                }
+            }
+            return false
+        }
+
+        @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        private fun destroy() {
+            searchJob?.cancel()
+        }
+    }
+
 }

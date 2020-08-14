@@ -1,17 +1,16 @@
 package com.omkar.jet2demo.ui.view
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import androidx.appcompat.widget.SearchView
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager
 import com.omkar.jet2demo.R
-import com.omkar.jet2demo.data.model.Article
+import com.omkar.jet2demo.data.model.Image
 import com.omkar.jet2demo.databinding.ArticalListFragmentBinding
 import com.omkar.jet2demo.ui.custom.EndlessRecyclerOnScrollListener
 import com.omkar.jet2demo.ui.viewmodel.ArticleListViewModel
@@ -24,7 +23,7 @@ class ArticleListFragment : Fragment() {
 
     private lateinit var binding: ArticalListFragmentBinding
 
-    private var articleList = mutableListOf<Article>()
+    private var imageList = mutableListOf<Image>()
 
     private var activateEndScrolling = false
 
@@ -39,10 +38,14 @@ class ArticleListFragment : Fragment() {
     }
 
     private var page: Int = 1
-    lateinit var layoutManager: LinearLayoutManager
+    lateinit var layoutManager: GridLayoutManager
+
+    private var searchedQuery: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+
     }
 
     override fun onCreateView(
@@ -50,42 +53,36 @@ class ArticleListFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding =
-            DataBindingUtil.inflate<ArticalListFragmentBinding>(
+            DataBindingUtil.inflate(
                 inflater,
                 R.layout.artical_list_fragment,
                 container,
                 false
             )
-        layoutManager = LinearLayoutManager(context)
+        layoutManager = GridLayoutManager(context, 3)
         binding.articleRecyclerView.layoutManager = layoutManager
         binding.articleRecyclerView.adapter =
-            ArticleListAdapter(articleList)
-        binding.articleRecyclerView.addItemDecoration(
-            DividerItemDecoration(
-                context,
-                DividerItemDecoration.VERTICAL
-            )
-        )
+            ArticleListAdapter(imageList, this)
+
         val endlessRecyclerOnScrollListener: EndlessRecyclerOnScrollListener =
             object : EndlessRecyclerOnScrollListener(layoutManager) {
                 override fun onLoadMore(current_page: Int) {
                     if (activateEndScrolling) {
-                        loadNextPage(current_page)
+                        loadNextPage(current_page, searchedQuery)
                     }
                 }
             }
 
         binding.articleRecyclerView.addOnScrollListener(endlessRecyclerOnScrollListener)
 
-
         return binding.root
     }
+
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = viewModelFactory.create(ArticleListViewModel::class.java)
         observeViewModel()
-        viewModel.fetchArticleList(page)
     }
 
     override fun onAttach(context: Context) {
@@ -96,8 +93,19 @@ class ArticleListFragment : Fragment() {
     private fun observeViewModel() {
         viewModel.articleLiveData.observe(viewLifecycleOwner, Observer {
             activateEndScrolling = it.isNotEmpty() && it.size >= 10
-            articleList.addAll(it)
-            if (articleList.isEmpty()) {
+            /* if (articleList.isEmpty()) {
+                 binding.noDataTextView.visibility = View.VISIBLE
+             } else
+                 binding.noDataTextView.visibility = View.GONE*/
+            for (t in it) {
+                if (t.images != null) {
+                    for (img in t.images!!) {
+                        img.imageTitle = t.title
+                        imageList.add(img)
+                    }
+                }
+            }
+            if (imageList.isEmpty()) {
                 binding.noDataTextView.visibility = View.VISIBLE
             } else
                 binding.noDataTextView.visibility = View.GONE
@@ -115,8 +123,42 @@ class ArticleListFragment : Fragment() {
     }
 
 
-    private fun loadNextPage(currentPage: Int) {
-        viewModel.fetchArticleList(currentPage)
+    private fun loadNextPage(currentPage: Int, searchTerm: String) {
+        viewModel.fetchArticleList(currentPage, searchTerm)
+    }
+
+    fun navigateToImageDetailsScreen(image: Image) {
+        val intent = Intent(activity, ImageDetailsActivity::class.java)
+        intent.putExtra("image_title", image.imageTitle)
+        intent.putExtra("image_id", image.id)
+        intent.putExtra("image_link", image.link)
+        activity?.startActivity(intent)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+
+        inflater.inflate(R.menu.menu_main, menu)
+        val search = menu.findItem(R.id.search)
+        val searchView = search.actionView as SearchView
+        searchView.setIconifiedByDefault(false)
+
+        searchView.setOnQueryTextListener(
+            ArticleListViewModel.DebouncingQueryTextListener(
+                this.lifecycle
+            ) { newText ->
+                newText?.let {
+                    searchedQuery = it
+                    imageList.clear()
+                    (binding.articleRecyclerView.adapter as ArticleListAdapter).notifyDataSetChanged()
+                    if (it.isNotEmpty()) {
+                        viewModel.fetchArticleList(page, it)
+                    }
+                }
+            }
+        )
+
+        super.onCreateOptionsMenu(menu, inflater)
+
     }
 
 

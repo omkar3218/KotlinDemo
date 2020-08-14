@@ -1,7 +1,7 @@
 package com.omkar.jet2demo.data.local
 
 import com.omkar.jet2demo.BuildConfig
-import com.omkar.jet2demo.data.model.Article
+import com.omkar.jet2demo.data.model.Image
 import io.realm.Realm
 import io.realm.RealmConfiguration
 import io.realm.RealmList
@@ -11,7 +11,7 @@ class AppDatabase private constructor() {
 
 
     private fun prepareRealmInstance() {
-        val config = RealmConfiguration.Builder().name("article.realm")
+        val config = RealmConfiguration.Builder().name("searchapp.realm")
             .schemaVersion(BuildConfig.SCHEMA_VERSION.toLong())
             .build()
         Realm.setDefaultConfiguration(config)
@@ -22,21 +22,32 @@ class AppDatabase private constructor() {
         if (Realm.getDefaultInstance() != null) Realm.getDefaultInstance()!!.close()
     }
 
-    fun saveArticleDataModel(articleList: RealmList<Article>?) {
-        Realm.getDefaultInstance()!!.beginTransaction()
-        Realm.getDefaultInstance()!!.copyToRealmOrUpdate(articleList)
-        Realm.getDefaultInstance()!!.commitTransaction()
+
+    fun getCommentForTheImage(imageId: String): String? {
+        return Realm.getDefaultInstance()!!.where(Image::class.java)
+            .equalTo("id", imageId).findFirst()?.comments
     }
 
-    fun getArticles(pageNumber: Int): List<Article> {
-        val list: MutableList<Article> = ArrayList()
-        val articleList: RealmResults<Article> =
-            Realm.getDefaultInstance()!!.where(Article::class.java)
-                .between("id", (pageNumber - 1) * 10, pageNumber * 10).findAll()
+    fun saveCommentForTheImage(imageId: String,comment: String) : Boolean{
+        var image: Image? =
+            Realm.getDefaultInstance()!!.where(Image::class.java)
+                .equalTo("id", imageId).findFirst()
+        if(image!=null){
+            Realm.getDefaultInstance()!!.beginTransaction()
+            image.comments = comment
+            Realm.getDefaultInstance()!!.commitTransaction()
+            return true
+        }else{
+            Realm.getDefaultInstance()!!.beginTransaction()
+            image = Image()
+            image.id = imageId
+            image.comments = comment
+            Realm.getDefaultInstance().copyToRealm(image)
+            Realm.getDefaultInstance()!!.commitTransaction()
+            return true
+        }
 
-        list.addAll(Realm.getDefaultInstance()!!.copyFromRealm(articleList))
-
-        return list
+        return false
     }
 
     companion object {
