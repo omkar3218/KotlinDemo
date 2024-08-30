@@ -1,7 +1,5 @@
 Name of the project : Jet2Demo
 
-Project Introduction :  This is assignment project.
-
 Software Architecture :  MVVM 
 
 Language used : KOTLIN
